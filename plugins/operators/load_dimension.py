@@ -10,7 +10,7 @@ class LoadDimensionOperator(BaseOperator):
     def __init__(self,
                  redshift_conn_id = "",
                  create_sql_stmt = "",
-                 append_or_replace = "",
+                 replace = True,
                  table = "",
                  *args, **kwargs):
 
@@ -18,15 +18,14 @@ class LoadDimensionOperator(BaseOperator):
         self.redshift_conn_id = redshift_conn_id
         self.create_sql_stmt = create_sql_stmt
         self.table = table
-        self.append_or_replace = append_or_replace
+        self.replace = replace
 
     def execute(self, context):
-    	redshift_conn = PostgresHook(postgres_conn_id = self.redshift_conn_id)
-    	
-    	if append_or_replace = "replace"
-    		redshift_conn.run(f"DELETE * FROM {self.table}")
-  			self.log.info(f"Existing {self.table} table deleted ready for replace operation")
-    	
-    	redshift_conn.run(self.create_sql_stmt)
-        self.log.info(f"{self.table} successfully loaded in {self.apprend_or_replace} operation")
+        redshift_conn = PostgresHook(postgres_conn_id = self.redshift_conn_id)
 
+        if replace:
+            redshift_conn.run(f"DELETE * FROM {self.table}")
+            self.log.info(f"Existing {self.table} table deleted ready for replace operation")
+
+        redshift_conn.run(self.create_sql_stmt)
+        self.log.info(f"{self.table} successfully loaded in {self.apprend_or_replace} operation")
