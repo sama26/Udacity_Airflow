@@ -21,6 +21,8 @@ s3_bucket = 'udacity-dend'
 song_s3_key = "song_data"
 log_s3_key = "log_data"
 log_file = "s3://udacity-dend/log_json_path.json"
+retries = 3 # Number of retries to be attempted if the DAG fails
+retry_delay_minutes = 5 # Delay in minutes before retry is attempted
 
 default_args = {
     'owner': 'udacity',
@@ -28,8 +30,8 @@ default_args = {
     'depends_on_past':False,
     'email_on_failure':True,
     'email_on_retry':False,
-    'retries':3,
-    'retry_delay':timedelta(minutes=5),
+    'retries':retries,
+    'retry_delay':timedelta(minutes=retry_delay_minutes),
     'catchup':False
     }
 

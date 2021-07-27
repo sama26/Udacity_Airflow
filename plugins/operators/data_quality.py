@@ -19,14 +19,26 @@ class DataQualityOperator(BaseOperator):
     def execute(self, context):
         redshift_conn = PostgresHook(postgres_conn_id = self.redshift_conn_id)
 
-        for table in self.tables:
-            quality_check = redshift_conn.get_records(f"SELECT COUNT(*) FROM {table};")
+        dq_checks = [
+            {'sql': "SELECT COUNT(*) FROM users WHERE userid is null", 'expected_result':0},
+            {'sql': "SELECT COUNT(*) FROM songs WHERE songid is null", 'expected_result':0},
+            {'sql': "SELECT COUNT(*) FROM artists WHERE artistid is null", 'expected_result':0},
+            {'sql': "SELECT COUNT(*) FROM songplays WHERE userid is null", 'expected_result':0},
+            {'sql': "SELECT COUNT(*) FROM time WHERE start_time is null", 'expected_result':0}
+            ]
 
-            if len(quality_check) < 1 or len(quality_check[0]) < 1:
-                raise ValueError(f"Data quality check failed. {self.table} returned no results")
+        for check in dq_checks:
+            sql = check.get('sql')
+            expected_result = check.get('expected_result')
 
-            num_records = records[0][0]
+            count = 0
+            records = redshift.get_records(sql)[0]
 
-            if num_records < 1:
-                raise ValueError(f"Data quality check failed. {self.table} contained 0 rows")
-            logging.info(f"Data quality on table {self.table} check passed with {records[0][0]} records")
+            if expected_result != records[0]:
+                count += 1
+
+            if count != 0:
+                raise ValueError(f"Data quality check failed. {self.table} has nulls in primary key")
+
+            if count == 0:
+                logging.info(f"Data quality on table {self.table} check passed")
